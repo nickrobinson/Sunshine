@@ -50,19 +50,28 @@ public class ForecastFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = sharedPref.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        String unit = sharedPref.getString(getString(R.string.pref_units_key),
+                getString(R.string.pref_units_imperial));
+        Intent intent = null;
+
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 FetchWeatherTask task = new FetchWeatherTask();
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                String location = sharedPref.getString(getString(R.string.pref_location_key),
-                        getString(R.string.pref_location_default));
-                String unit = sharedPref.getString(getString(R.string.pref_units_key),
-                        getString(R.string.pref_units_imperial));
                 task.execute(location, unit);
-                return super.onOptionsItemSelected(item);
+                return true;
+            case R.id.action_map_location:
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("geo:0,0?q=" + location));
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                }
+                return true;
             case R.id.action_settings:
-                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                intent = new Intent(getActivity(), SettingsActivity.class);
                 startActivity(intent);
                 return super.onOptionsItemSelected(item);
             default:

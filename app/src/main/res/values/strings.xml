@@ -14,5 +14,6 @@
     <string name="pref_units_key">units</string>
     <string name="pref_units_label">Units</string>
     <string name="pref_units_dialogTitle">Units</string>
+    <string name="map_location_label">Map My Location</string>
 
 </resources>
