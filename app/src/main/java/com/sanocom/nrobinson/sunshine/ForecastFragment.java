@@ -2,9 +2,11 @@ package com.sanocom.nrobinson.sunshine;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,7 +54,12 @@ public class ForecastFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 FetchWeatherTask task = new FetchWeatherTask();
-                task.execute("35801");
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String location = sharedPref.getString(getString(R.string.pref_location_key),
+                        getString(R.string.pref_location_default));
+                String unit = sharedPref.getString(getString(R.string.pref_units_key),
+                        getString(R.string.pref_units_imperial));
+                task.execute(location, unit);
                 return super.onOptionsItemSelected(item);
             case R.id.action_settings:
                 Intent intent = new Intent(getActivity(), SettingsActivity.class);
@@ -71,7 +78,12 @@ public class ForecastFragment extends Fragment {
 
         FetchWeatherTask task = new FetchWeatherTask();
         String[] weatherData = new String[0];
-        task.execute("35801");
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = sharedPref.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        String unit = sharedPref.getString(getString(R.string.pref_units_key),
+                getString(R.string.pref_units_imperial));
+        task.execute(location, unit);
         try {
             weatherData =  task.get();
         } catch (InterruptedException e) {
@@ -110,7 +122,7 @@ public class ForecastFragment extends Fragment {
         /** The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute() */
           @Override
-          protected String[] doInBackground(String... zipcode) {
+          protected String[] doInBackground(String... config) {
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -126,9 +138,9 @@ public class ForecastFragment extends Fragment {
                 Uri.Builder builder = new Uri.Builder();
                 builder.scheme("http").authority("api.openweathermap.org").appendPath("data")
                     .appendPath("2.5").appendPath("forecast").appendPath("daily");
-                builder.appendQueryParameter("q", zipcode[0]);
+                builder.appendQueryParameter("q", config[0]);
                 builder.appendQueryParameter("mode", "json");
-                builder.appendQueryParameter("units", "imperial");
+                builder.appendQueryParameter("units", config[1]);
                 builder.appendQueryParameter("cnt", "7");
 
                 URL url = new URL(builder.build().toString());
