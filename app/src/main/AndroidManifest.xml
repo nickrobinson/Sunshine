@@ -31,6 +31,9 @@
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity">
         </activity>
+        <provider
+            android:authorities="com.sanocom.nrobinson.sunshine"
+            android:name=".data.WeatherProvider" />
     </application>
 
 </manifest>
