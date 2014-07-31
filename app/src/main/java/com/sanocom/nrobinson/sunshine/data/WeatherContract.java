@@ -24,7 +24,7 @@ import android.provider.BaseColumns;
  */
 public class WeatherContract {
     // The "Content Authority"
-    public static final String CONTENT_AUTHORITY = "com.sanocom.nrobinson.sunshine.app";
+    public static final String CONTENT_AUTHORITY = "com.sanocom.nrobinson.sunshine";
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
