@@ -21,10 +21,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
-import com.sanocom.nrobinson.sunshine.data.WeatherContract;
-import com.sanocom.nrobinson.sunshine.data.WeatherDbHelper;
 import com.sanocom.nrobinson.sunshine.data.WeatherContract.LocationEntry;
 import com.sanocom.nrobinson.sunshine.data.WeatherContract.WeatherEntry;
+import com.sanocom.nrobinson.sunshine.data.WeatherDbHelper;
 
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import java.util.Set;
 public class TestDb extends AndroidTestCase {
 
     public static final String LOG_TAG = TestDb.class.getSimpleName();
-    static public String TEST_CITY_NAME = "North Pole";
 
     public void testCreateDb() throws Throwable {
         mContext.deleteDatabase(WeatherDbHelper.DATABASE_NAME);
@@ -49,10 +47,10 @@ public class TestDb extends AndroidTestCase {
         WeatherDbHelper dbHelper = new WeatherDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        ContentValues values = createLocationContentValues();
+        ContentValues testValues = createNorthPoleLocationValues();
 
         long locationRowId;
-        locationRowId = db.insert(LocationEntry.TABLE_NAME, null, values);
+        locationRowId = db.insert(LocationEntry.TABLE_NAME, null, testValues);
 
         // Verify we got a row back.
         assertTrue(locationRowId != -1);
@@ -64,7 +62,7 @@ public class TestDb extends AndroidTestCase {
         // A cursor is your primary interface to the query results.
         Cursor cursor = db.query(
                 LocationEntry.TABLE_NAME,  // Table to Query
-                null,
+                null, // all columns
                 null, // Columns for the "where" clause
                 null, // Values for the "where" clause
                 null, // columns to group by
@@ -72,16 +70,16 @@ public class TestDb extends AndroidTestCase {
                 null // sort order
         );
 
-        validateCursor(cursor, values);
+        validateCursor(cursor, testValues);
 
-        //Begin checking weather data
-        ContentValues weatherValues = createWeatherContentValues(locationRowId);
+        // Fantastic.  Now that we have a location, add some weather!
+        ContentValues weatherValues = createWeatherValues(locationRowId);
 
         long weatherRowId = db.insert(WeatherEntry.TABLE_NAME, null, weatherValues);
         assertTrue(weatherRowId != -1);
 
         // A cursor is your primary interface to the query results.
-        cursor = db.query(
+        Cursor weatherCursor = db.query(
                 WeatherEntry.TABLE_NAME,  // Table to Query
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
@@ -91,30 +89,12 @@ public class TestDb extends AndroidTestCase {
                 null  // sort order
         );
 
-        validateCursor(cursor, weatherValues);
+        validateCursor(weatherCursor, weatherValues);
 
-        cursor.close();
         dbHelper.close();
     }
 
-    static public ContentValues createLocationContentValues() {
-        // Test data we're going to insert into the DB to see if it works.
-        String testLocationSetting = "99705";
-        double testLatitude = 64.7488;
-        double testLongitude = -147.353;
-
-        // Create a new map of values, where column names are the keys
-        ContentValues values = new ContentValues();
-        values.put(LocationEntry.COLUMN_LOCATION_SETTING, testLocationSetting);
-        values.put(LocationEntry.COLUMN_CITY_NAME, TEST_CITY_NAME);
-        values.put(LocationEntry.COLUMN_COORD_LAT, testLatitude);
-        values.put(LocationEntry.COLUMN_COORD_LONG, testLongitude);
-
-        return values;
-    }
-
-    static public ContentValues createWeatherContentValues(long locationRowId) {
-        // Fantastic.  Now that we have a location, add some weather!
+    static ContentValues createWeatherValues(long locationRowId) {
         ContentValues weatherValues = new ContentValues();
         weatherValues.put(WeatherEntry.COLUMN_LOC_KEY, locationRowId);
         weatherValues.put(WeatherEntry.COLUMN_DATETEXT, "20141205");
@@ -128,6 +108,17 @@ public class TestDb extends AndroidTestCase {
         weatherValues.put(WeatherEntry.COLUMN_WEATHER_ID, 321);
 
         return weatherValues;
+    }
+
+    static ContentValues createNorthPoleLocationValues() {
+        // Create a new map of values, where column names are the keys
+        ContentValues testValues = new ContentValues();
+        testValues.put(LocationEntry.COLUMN_LOCATION_SETTING, "99705");
+        testValues.put(LocationEntry.COLUMN_CITY_NAME, "North Pole");
+        testValues.put(LocationEntry.COLUMN_COORD_LAT, 64.7488);
+        testValues.put(LocationEntry.COLUMN_COORD_LONG, -147.353);
+
+        return testValues;
     }
 
     static void validateCursor(Cursor valueCursor, ContentValues expectedValues) {
